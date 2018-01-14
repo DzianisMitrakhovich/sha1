@@ -2,7 +2,6 @@ package service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -10,7 +9,7 @@ public class PasswordCheckService {
     private String guess;
     private String hash;
     private volatile String passwordCracked;
-    private ExecutorService executorService = Executors.newFixedThreadPool(10); // create a pool of N threads
+    private ExecutorService executorService = Executors.newFixedThreadPool(1); // create a pool of N threads
     private List<String> combinations = new ArrayList<String>(); // set count with all possible combinations
 
     public PasswordCheckService() {
@@ -26,24 +25,27 @@ public class PasswordCheckService {
             generatePassword("", i, guessingRange);
         }
         // join threads here
+        executorService.shutdownNow();
         return getPasswordCracked();
     }
 
     private void generatePassword(String guess, int numberOfInputCharacters, char[] guessingRange) {
-
+        combinations.add(guess);
         executorService.submit(new MultiThreadWordChecker(guess, hash, this));
         for (char character : guessingRange) {
-            if (checkIfPasswordIsFound()) {
+            if (!isPasswordFound()) {
                 generatePassword(
                         guess + character,
                         numberOfInputCharacters - 1,
                         guessingRange);
+            } else {
+                return;
             }
         }
     }
 
-    private boolean checkIfPasswordIsFound () {
-        return passwordCracked == null;
+    private boolean isPasswordFound() {
+        return passwordCracked != null;
     }
 
     public String getPasswordCracked () {

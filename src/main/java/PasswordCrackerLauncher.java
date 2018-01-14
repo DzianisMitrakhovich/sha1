@@ -14,8 +14,7 @@ public class PasswordCrackerLauncher {
         PasswordCheckService passwordCheckService = new PasswordCheckService();
         String result = passwordCheckService.findPassword(5, chars, hash);
 
-        MultiThreadWordChecker multiThreadWordChecker = new MultiThreadWordChecker();
-        System.out.println(multiThreadWordChecker.getResult());
+        System.out.println(passwordCheckService.getPasswordCracked());
 
         long timeAfter = System.currentTimeMillis();
 
