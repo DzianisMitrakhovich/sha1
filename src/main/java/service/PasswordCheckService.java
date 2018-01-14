@@ -1,47 +1,61 @@
 package service;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.commons.codec.digest.DigestUtils;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class PasswordCheckService {
-    private String guess;
     private String hash;
     private volatile String passwordCracked;
-    private ExecutorService executorService = Executors.newFixedThreadPool(1); // create a pool of N threads
-    private List<String> combinations = new ArrayList<String>(); // set count with all possible combinations
+    //private ExecutorService executorService = Executors.newFixedThreadPool(1); // create a pool of N threads
 
     public PasswordCheckService() {
     }
 
-    private PasswordCheckService(String guess, String hash) {
-        this.guess = guess;
+    public PasswordCheckService(String hash) {
         this.hash = hash;
     }
 
-    public String findPassword(int maxNumberOfCharacters, char[] guessingRange, String hash) {
+    public String findPassword(int maxNumberOfCharacters, final char[] guessingRange) throws InterruptedException {
+        ExecutorService executorServiceLocal = Executors.newFixedThreadPool(1);
+
         for (int i = 0; i <= maxNumberOfCharacters; i++) {
-            generatePassword("", i, guessingRange);
+            final int currentNumberOfCombinations = i;
+
+            executorServiceLocal.submit(new Runnable() {
+
+                public void run() {
+                    generatePassword("", currentNumberOfCombinations, guessingRange);
+                }
+            });
         }
-        // join threads here
-        executorService.shutdownNow();
+        executorServiceLocal.shutdown();
+        executorServiceLocal.awaitTermination(Integer.MAX_VALUE, TimeUnit.MINUTES);
+
         return getPasswordCracked();
     }
 
     private void generatePassword(String guess, int numberOfInputCharacters, char[] guessingRange) {
-        combinations.add(guess);
-        executorService.submit(new MultiThreadWordChecker(guess, hash, this));
-        for (char character : guessingRange) {
-            if (!isPasswordFound()) {
-                generatePassword(
-                        guess + character,
-                        numberOfInputCharacters - 1,
-                        guessingRange);
-            } else {
-                return;
+        if (numberOfInputCharacters > 0) {
+            for (char character : guessingRange) {
+                if (!isPasswordFound()) {
+                    generatePassword(
+                            guess + character,
+                            numberOfInputCharacters - 1,
+                            guessingRange);
+                } else {
+                    return;
+                }
+            }
+        } else {
+            System.out.println(guess);
+            if (DigestUtils.sha1Hex(guess).equals(hash)) {
+                this.setPasswordCracked(guess);
             }
         }
+
     }
 
     private boolean isPasswordFound() {

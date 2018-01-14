@@ -5,16 +5,16 @@ import service.PasswordCheckService;
 public class PasswordCrackerLauncher {
     private final static char[] chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".toCharArray();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         long timeBefore = System.currentTimeMillis();
 
-        String p = "hiG";
+        String p = "Ab2G";
         String hash = DigestUtils.sha1Hex(p);
 
-        PasswordCheckService passwordCheckService = new PasswordCheckService();
-        String result = passwordCheckService.findPassword(5, chars, hash);
+        PasswordCheckService passwordCheckService = new PasswordCheckService(hash);
+        String result = passwordCheckService.findPassword(5, chars);
 
-        System.out.println(passwordCheckService.getPasswordCracked());
+        System.out.println("Your password is: " + result);
 
         long timeAfter = System.currentTimeMillis();
 
