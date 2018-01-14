@@ -19,7 +19,6 @@ public class MultiThreadWordChecker implements Runnable {
 
     public void run() {
         if (DigestUtils.sha1Hex(word).equals(hash)) {
-            System.out.println("Your password is: " + word);
             service.setPasswordCracked(word);
         }
     }

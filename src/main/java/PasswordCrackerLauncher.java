@@ -8,13 +8,13 @@ public class PasswordCrackerLauncher {
     public static void main(String[] args) {
         long timeBefore = System.currentTimeMillis();
 
-        String p = "hiG";
+        String p = "hiGs";
         String hash = DigestUtils.sha1Hex(p);
 
-        PasswordCheckService passwordCheckService = new PasswordCheckService();
-        String result = passwordCheckService.findPassword(5, chars, hash);
+        PasswordCheckService passwordCheckService = new PasswordCheckService(hash);
+        String result = passwordCheckService.findPassword(5, chars);
 
-        System.out.println(passwordCheckService.getPasswordCracked());
+        System.out.println("Your password is: " + result);
 
         long timeAfter = System.currentTimeMillis();
 
